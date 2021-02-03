@@ -26,10 +26,19 @@ def left_to_right_check(input_line: str, pivot: int):
 
     >>> left_to_right_check("412453*", 4)
     True
-    >>> left_to_right_check("452453*", 5)
+    >>> left_to_right_check("452453*", 4)
     False
     """
-    pass
+    without_hints = input_line[1:-1]
+    curent_visible = 0
+    all_visible = 0
+    
+    for height in without_hints:
+        if int(height) > curent_visible:
+            all_visible += 1
+            curent_visible = int(height)
+    
+    return all_visible == pivot
 
 
 def check_not_finished_board(board: list):
@@ -68,7 +77,7 @@ def check_uniqueness_in_rows(board: list):
     for index, row in enumerate(board):
 
         if index != 0 and index != len(board) - 1:
-            without_hints = row[1:-2]
+            without_hints = row[1:-1]
             row_single = set(without_hints)
 
             if len(without_hints) != len(row_single):
@@ -92,7 +101,20 @@ def check_horizontal_visibility(board: list):
     >>> check_horizontal_visibility(['***21**', '452413*', '423145*', '*543215', '*35214*', '*41532*', '*2*1***'])
     False
     """
-    pass
+    for index, row in enumerate(board):
+        if index != 0 and index != len(board) - 1:
+            
+            if row[0] != '*':
+                pivot = int(row[0])
+                if not left_to_right_check(row, pivot):
+                    return False
+            
+            if row[-1] != '*':
+                pivot = int(row[-1])
+                if not left_to_right_check(row[::-1], pivot):
+                    return False
+    return True
+
 
 
 def check_columns(board: list):
@@ -108,7 +130,18 @@ def check_columns(board: list):
     >>> check_columns(['***21**', '412553*', '423145*', '*543215', '*35214*', '*41532*', '*2*1***'])
     False
     """
-    pass
+    length = len(board)
+    turned_board = [''] * length
+
+    for i in range(length):
+        for j in range(length):
+            turned_board[j] += board[i][j]
+        
+    if not check_uniqueness_in_rows(turned_board):
+        return False
+    
+    return check_horizontal_visibility(turned_board)
+
 
 
 def check_skyscrapers(input_path: str):
@@ -120,8 +153,15 @@ def check_skyscrapers(input_path: str):
     >>> check_skyscrapers("check.txt")
     True
     """
-    pass
+    board = read_input(input_path)
+
+    if not check_not_finished_board(board) or not check_columns(board)\
+        or not check_uniqueness_in_rows(board) or not check_horizontal_visibility(board):
+        return False
+    
+    return True
+
 
 
 if __name__ == "__main__":
-    print(check_skyscrapers("check.txt"))
+    print(check_skyscrapers("skyscrapers/check.txt"))
